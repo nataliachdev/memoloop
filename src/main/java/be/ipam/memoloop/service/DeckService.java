@@ -5,11 +5,14 @@ import be.ipam.memoloop.dto.CreateDeckDto;
 import be.ipam.memoloop.dto.DeckDto;
 import be.ipam.memoloop.mapper.DeckDetailedMapper;
 import be.ipam.memoloop.mapper.DeckMapper;
+import be.ipam.memoloop.model.Card;
 import be.ipam.memoloop.model.Deck;
 import be.ipam.memoloop.repository.DeckRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -52,6 +55,22 @@ public class DeckService {
         Deck deck = deckMapper.toEntity(createDeckDto);
         Deck savedDeck = deckRepository.save(deck);
         return deckMapper.toDto(savedDeck);
+    }
+
+    //Draw x cards from deck
+    public List<Card> drawCards(Deck deck){
+        // Refresh deck from DB
+        deck = deckRepository.findById(deck.getId())
+                .orElseThrow(() -> new RuntimeException("Deck not found"));
+
+        List<Card> cards = new ArrayList<>(deck.getCards());
+
+        if (cards.size() < 10) {
+            throw new IllegalStateException("Not enough cards in deck: " + cards.size());
+        }
+
+        Collections.shuffle(cards);
+        return cards.subList(0, 10);
     }
 
     //delete deck
